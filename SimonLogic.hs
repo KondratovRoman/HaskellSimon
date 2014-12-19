@@ -4,6 +4,8 @@ import System.Random
 import Data.List
 import System.IO
 import Control.Monad
+import Control.Monad.Trans
+import Control.Monad.Trans.Maybe
 
 data Color = Red | Yellow | Blue | Green
 	deriving (Show, Eq)
@@ -46,4 +48,34 @@ win st1 st2
 {-Таймер-}
 
 {-Консольная реализация нашей игры в ее простейшем виде-
-напишу чуть позже}
+напишу чуть позже-}
+parseStr :: String -> [Color]
+parseStr str = parseList $ words str 
+
+parseList :: [String] -> [Color]
+parseList xs = map (\x -> prs x) xs
+	where 	
+		prs :: String -> Color
+		prs x 
+			| x=="Red" = Red
+			| x=="Blue" = Blue
+			| x=="Yellow" = Yellow
+			|otherwise = Green 
+
+stringLevel :: State -> String
+stringLevel st = foldl(\acc x -> acc ++ " " ++ show x) "" st  
+	
+	
+action n = do
+	state <- generateLevel n
+	putStrLn $ stringLevel state
+	str <- getLine
+    	let userList = parseStr str
+	win userList state
+	if compareStates userList state then action (n+1) else win userList state
+
+
+
+
+
+
