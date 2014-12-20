@@ -31,10 +31,10 @@ gui =  do
   taskShowTimer <- entry f [text := "01:29" , enabled := False ]
   --Заглушка, для таймера отсчитывающего, сколько осталось времени до конца выполнения задания
   howManyTimer <- entry f [text := "01:29" , enabled := False ]
-  b1 <- button f [ text := "yellow", clientSize := sz 25 25  ]
-  b2 <- button f [ text := "green" ]
-  b3 <- button f [ text := "blue" ]
-  b4 <- button f [ text := "red" ]
+  b1 <- button f [ text := "yellow", bgcolor  := yellow  ]
+  b2 <- button f [ text := "green" , bgcolor  := green ]
+  b3 <- button f [ text := "blue" , bgcolor  := blue]
+  b4 <- button f [ text := "red" , bgcolor  := red ]
   q <- button f [ text := "quit" , on command := close f ]
   h <- button f [ text := "help" , on command := chelp f ]
   a <- button f [ text := "about", on command := about f ]
@@ -51,7 +51,7 @@ gui =  do
 	-- само задание
         hfill $ minsize (sz 150 25) $ widget txtTitle,
         -- Таймер до закрытия
-	hfill $ minsize (sz 50 25) $ widget taskShowTimer   
+	    hfill $ minsize (sz 150 25) $ widget taskShowTimer   
         ],
         {- средний ряд -}
         hfloatCentre $  margin 1 $ row 2 [
@@ -62,7 +62,7 @@ gui =  do
 	     widget b3,
 	     widget b4
            ],
-	   hfill $ minsize (sz 50 10) $ widget  howManyTimer 
+	    minsize (sz 150 40) $ widget  howManyTimer 
         ],
 	{- нижний ряд -}
         hfloatCentre $  margin 1 $ row 1 [ 
