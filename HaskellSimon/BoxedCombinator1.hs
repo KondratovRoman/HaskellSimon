@@ -1,5 +1,6 @@
 module Main where
 import Graphics.UI.WX
+import SimonLogic
 
 bugtext = unlines [ "Former bug: these buttons should react when clicked"
                   , "but the boxed one does not"
@@ -19,14 +20,26 @@ chelp w
   (  "  Kill me,please \n\n"  )
 
 main :: IO ()
-main = start gui
+main = start $ gui 1
 
-gui :: IO ()
-gui =  do
+--проверяет верно ли пользователь нажал кнопки и генерирует новый уровень
+actionGUI :: State -> State -> Int -> IO()
+actionGUI st1 st2 n = do
+    let equal = compareStates st1 st2
+    state <- generateLevel n
+    let level = stringLevel state
+    set txtTitle [ text := level]
+    return ()
+
+
+gui :: Int -> IO ()
+gui n =  do
+  state <- generateLevel n
+  let level = stringLevel state
   -- форма, на которой будут лежать все наши контролы
   f <- frame [ text := "Simon" ]
   -- Task text 
-  txtTitle <- entry f [text := "Yellow, red, red, blue!" , enabled := False ]
+  txtTitle <- entry f [text := level , enabled := False ]
   --заглушка для таймера,показывающего, сколько осталось для закрытия задания.
   taskShowTimer <- entry f [text := "01:29" , enabled := False ]
   --Заглушка, для таймера отсчитывающего, сколько осталось времени до конца выполнения задания
@@ -72,9 +85,11 @@ gui =  do
         ] 
 	--  defaultButton := q
      ]
-   ]  
-  return ()
+   ] 
 
+  set a [ on command := actionGUI state state n]
+  return() 
+  
 
 
 
