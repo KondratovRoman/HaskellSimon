@@ -31,6 +31,20 @@ chelp w
 main :: IO ()
 main = start $ gui
 
+--Если пользователь проиграл, то обнуляем все и запускаем игру заново
+gameOver :: Window a -> IORef State -> IORef Int -> IORef State -> TextCtrl () -> IO()
+gameOver f userList n levelList label= do
+    endOfGame f --выводим сообщение о проигрыше
+    let tempList = [] --обнуляем пользовательскую последовательность
+    writeIORef userList tempList 
+    writeIORef n 1 --генерируем заново 1ый уровень
+    level <- generateLevel 1
+    writeIORef levelList level
+    set label [ text := stringLevel level]
+    return()
+
+
+
 --проверяет верно ли пользователь нажал кнопки и генерирует новый уровень
 actionGUI :: Window a -> IORef Int -> TextCtrl () -> IORef State -> IO()
 actionGUI f ref txtTitle  constState = do
@@ -87,7 +101,7 @@ actionUserButtons textField n w refUser st1 butColor = do
     writeIORef refUser modifiedUserList
     let partOfGenList = getNfromList (length modifiedUserList) constState  
     let equal = compareStates modifiedUserList partOfGenList  -- Сравнивает текущий подсписок с соотв. по длине подскиском программы лексико-графически
-    if (equal == False) then endOfGame w  else  -- Если подпоследовательность не равна соответствующей подпоследовательности списка программы, 
+    if (equal == False) then (gameOver w refUser n st1 textField)  else  -- Если подпоследовательность не равна соответствующей подпоследовательности списка программы, 
                                                 --то была допущена ошибка, программа завершается
                 if (length modifiedUserList == length constState) then nullUsersList w refUser n textField st1 else return()
 
