@@ -45,26 +45,40 @@ actionGUI ref txtTitle  constState = do
 
 sleep :: IO ()
 sleep = do
-    threadDelay $ 100000 * 10
+    threadDelay $ 1000000 * 1
+    --return ()
 
 -- Функция, которая выводит в лейбл один элемент сгенерированной последовательности
 showOneColor :: GameColor -> TextCtrl ()-> IO()
 showOneColor color label = do
-    set label [ text := colorToString color ]
-    sleep
-    set label [ text := "" ]
+    let str = colorToString color
+    ftext <- get label text
+    threadDelay $ 1000000 * 1
+    set label [ text := str]
+    
     return ()
 
+{-recursiveShow :: Int -> State -> TextCtrl () -> IO()
+recursiveShow constState label = do
+      let curElem = head constState
+      showOneColor curElem label
+      if (constState == []) then return() else recursiveShow (tail constState) label-}
 
+ 
 -- Функция, которая показывает пользователю сгенерированную последовательность поэлементно с задержкой
 showColorsListWithDelay :: IORef State -> TextCtrl () -> IO()
 showColorsListWithDelay generatedList label = do
     genList <- readIORef generatedList
-    --map (\x -> showOneColor x label) genList
-    forM [1..(length genList)] $ (\a -> do
+    mapM_ (\x -> (showOneColor x label)) genList
+    --recursiveShow genList label
+    return ()
+    --showOneColor (head genList) label
+    
+    {-forM [1..(length genList)] $ (\a -> do
       showOneColor a label
-      return ())
-    return()
+      return ())-}
+   -- mapM_ (\x -> (showOneColor x label)) genList
+
 
 
 -- Обнуляет пользовательский список перед генерацией нового игрового уровня
@@ -158,9 +172,9 @@ gui =  do
      ]
    ] 
 
-
+ -- showColorsListWithDelay refState txtTitle
   
-
+--54
   --set a [ on command := actionGUI ref txtTitle state state n]
   return() 
   
