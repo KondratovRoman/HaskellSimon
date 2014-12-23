@@ -7,11 +7,11 @@ import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
 
-data Color = Red | Yellow | Blue | Green
+data GameColor = Red | Yellow | Blue | Green
 	deriving (Show, Eq)
 
 --состояние хранит список последовательно появившихся цветов
-type State = [Color] 
+type State = [GameColor] 
 
 {-Функция, генерирующая уровень. 
 n - номер уровня и количество зажигающихся цветов на этом уровне-}
@@ -20,19 +20,23 @@ generateLevel n = forM [1..n] $ (\a -> do
 			x <- randomColor
 			return x)
 
-randomColor :: IO Color
+randomColor :: IO GameColor
 randomColor = do
 	number <- randomRIO (1,4) :: IO Int
 	let col = getColorOnNumber number
 	return col
 	
 
-getColorOnNumber :: Int -> Color
+getColorOnNumber :: Int -> GameColor
 getColorOnNumber n
 	| n==1 = Red
 	| n==2 = Yellow
 	| n==3 = Blue
 	| otherwise = Green 
+
+  {-Функция, которая берет первые несколько элементов списка-}
+getNfromList :: Int -> State -> State
+getNfromList n list = take n list
 
 
 {-Функция, проверяющая правильность нажатых пользователем цветов.
@@ -49,13 +53,13 @@ win st1 st2
 
 {-Консольная реализация нашей игры в ее простейшем виде-
 напишу чуть позже-}
-parseStr :: String -> [Color]
+parseStr :: String -> [GameColor]
 parseStr str = parseList $ words str 
 
-parseList :: [String] -> [Color]
+parseList :: [String] -> [GameColor]
 parseList xs = map (\x -> prs x) xs
 	where 	
-		prs :: String -> Color
+		prs :: String -> GameColor
 		prs x 
 			| x=="Red" = Red
 			| x=="Blue" = Blue
