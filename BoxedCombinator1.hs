@@ -32,61 +32,47 @@ main :: IO ()
 main = start $ gui
 
 --проверяет верно ли пользователь нажал кнопки и генерирует новый уровень
-actionGUI :: IORef Int -> TextCtrl () -> IORef State -> IO()
-actionGUI ref txtTitle  constState = do
+actionGUI :: Window a -> IORef Int -> TextCtrl () -> IORef State -> IO()
+actionGUI f ref txtTitle  constState = do
     st <- readIORef ref
     --let equal = compareStates st1 st2
     state <- generateLevel st
     writeIORef constState state
     --let level = stringLevel state
-    showColorsListWithDelay constState txtTitle 
+    showColorsListWithDelay f constState txtTitle 
     writeIORef ref (st+1)
     return ()
 
-sleep :: IO ()
-sleep = do
-    threadDelay $ 1000000 * 1
-    --return ()
-
 -- Функция, которая выводит в лейбл один элемент сгенерированной последовательности
-showOneColor :: GameColor -> TextCtrl ()-> IO()
-showOneColor color label = do
+showOneColor :: IORef State -> TextCtrl ()-> IO()
+showOneColor colors label = do
+    currState <- readIORef colors
+    if currState == [] then return() else showOneColor_ colors label
+
+showOneColor_ :: IORef State -> TextCtrl ()-> IO()
+showOneColor_ colors label = do
+    currState <- readIORef colors
+    let color = head currState
     let str = colorToString color
-    ftext <- get label text
-    threadDelay $ 1000000 * 1
     set label [ text := str]
-    
-    return ()
-
-{-recursiveShow :: Int -> State -> TextCtrl () -> IO()
-recursiveShow constState label = do
-      let curElem = head constState
-      showOneColor curElem label
-      if (constState == []) then return() else recursiveShow (tail constState) label-}
-
+    if (currState == []) then return() else (writeIORef colors (tail currState))
  
--- Функция, которая показывает пользователю сгенерированную последовательность поэлементно с задержкой
-showColorsListWithDelay :: IORef State -> TextCtrl () -> IO()
-showColorsListWithDelay generatedList label = do
-    genList <- readIORef generatedList
-    mapM_ (\x -> (showOneColor x label)) genList
-    --recursiveShow genList label
+-- Функция, которая показывает пользователю сгенерированную последовательность поэлементно с задержкой по таймеру
+showColorsListWithDelay :: Window a -> IORef State -> TextCtrl () -> IO()
+showColorsListWithDelay f generatedList label = do
+  --копируем generated list
+    stateGenList <- readIORef generatedList
+    generatedListCopy <- newIORef (stateGenList)
+    t <- timer f [interval := 1000, on command := showOneColor generatedListCopy label]
     return ()
-    --showOneColor (head genList) label
-    
-    {-forM [1..(length genList)] $ (\a -> do
-      showOneColor a label
-      return ())-}
-   -- mapM_ (\x -> (showOneColor x label)) genList
 
 
-
--- Обнуляет пользовательский список перед генерацией нового игрового уровня
-nullUrersList :: IORef State -> IORef Int -> TextCtrl () -> IORef State -> IO()
-nullUrersList userList n textField st1 = do
+-- Обнуляет пользовательский список перед генерацией нового игрового уровня и запускает новый уровень
+nullUsersList :: Window a -> IORef State -> IORef Int -> TextCtrl () -> IORef State -> IO()
+nullUsersList f userList n textField st1 = do
     let tempList = []
     writeIORef userList tempList
-    actionGUI n textField st1
+    actionGUI f n textField st1
     return()
 
 actionUserButtons :: TextCtrl () -> IORef Int -> Window a -> IORef State -> IORef State -> GameColor -> IO()
@@ -98,31 +84,27 @@ actionUserButtons textField n w refUser st1 butColor = do
     let partOfGenList = getNfromList (length modifiedUserList) constState  
     let equal = compareStates modifiedUserList partOfGenList  -- Сравнивает текущий подсписок с соотв. по длине подскиском программы лексико-графически
     if (equal == False) then endOfGame w  else  -- Если подпоследовательность не равна соответствующей подпоследовательности списка программы, 
-                                            --то была допущена ошибка, программа завершается
-                if (length modifiedUserList == length constState) then nullUrersList refUser n textField st1 else return()
+                                                --то была допущена ошибка, программа завершается
+                if (length modifiedUserList == length constState) then nullUsersList w refUser n textField st1 else return()
 
 
-
-{-updateBtns :: [Button ()] -> Board -> IO ()
-updateBtns btns brd = do
-  let z = zip (elems brd) btns
-  forM_ z $ \p -> set (snd p) [text := (btnLabel (fst p))]
--}
 gui :: IO ()
 gui =  do
-  state <- generateLevel 1
-  let level = stringLevel state
   -- форма, на которой будут лежать все наши контролы
   f <- frame [ text := "Simon" ]
-
+  
   let n = 1
+  state <- generateLevel n
+  let level = stringLevel state 
   ref <- newIORef (n+1)
+
+   -- Это список, в который записивается сгенерированная программой последовательность для определенного игрового уровня
+  refState <- newIORef state
 
   -- Это список, который накапливает значения на определенном уровне по нажатию цветных кнопок пользователя
   let userList = []
   refUserList <- newIORef userList
-  -- Это список, в который записивается сгенерированная программой последовательность для определенного игрового уровня
-  refState <- newIORef state
+ 
   -- Task text 
   txtTitle <- entry f [text := level , enabled := False ]
   --заглушка для таймера,показывающего, сколько осталось для закрытия задания.
@@ -137,6 +119,8 @@ gui =  do
   h <- button f [ text := "help" , on command := chelp f ]
   a <- button f [ text := "about", on command := about f ]
 
+
+ -- t <- timer f [interval := 1000, on command := showOneColor refState txtTitle]
   set b1 [ on command := actionUserButtons txtTitle ref f refUserList refState Yellow]
   set b2 [ on command := actionUserButtons txtTitle ref f refUserList refState Green]
   set b3 [ on command := actionUserButtons txtTitle ref f refUserList refState Blue]
@@ -147,9 +131,9 @@ gui =  do
         {- верхний ряд -}
         margin 1 $ row 1 [
 	-- само задание
-        hfill $ minsize (sz 150 25) $ widget txtTitle,
+        hfill $ minsize (sz 150 25) $ widget txtTitle--,
         -- Таймер до закрытия
-	    hfill $ minsize (sz 150 25) $ widget taskShowTimer   
+	      --hfill $ minsize (sz 150 25) $ widget taskShowTimer   
         ],
         {- средний ряд -}
         hfloatCentre $  margin 1 $ row 2 [
@@ -172,10 +156,6 @@ gui =  do
      ]
    ] 
 
- -- showColorsListWithDelay refState txtTitle
-  
---54
-  --set a [ on command := actionGUI ref txtTitle state state n]
   return() 
   
 

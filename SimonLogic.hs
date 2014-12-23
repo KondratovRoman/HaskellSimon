@@ -5,7 +5,6 @@ import Data.List
 import System.IO
 import Control.Monad
 import Control.Monad.Trans
-import Control.Monad.Trans.Maybe
 
 data GameColor = Red | Yellow | Blue | Green
 	deriving (Show, Eq)
