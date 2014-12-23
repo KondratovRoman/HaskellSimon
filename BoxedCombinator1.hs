@@ -1,8 +1,11 @@
 module Main where
 import Graphics.UI.WX
 import SimonLogic
+import System.IO
+import Control.Monad
 import Data.IORef
 import Data.List
+import Control.Concurrent (threadDelay)
 
 bugtext = unlines [ "Former bug: these buttons should react when clicked"
                   , "but the boxed one does not"
@@ -35,10 +38,34 @@ actionGUI ref txtTitle  constState = do
     --let equal = compareStates st1 st2
     state <- generateLevel st
     writeIORef constState state
-    let level = stringLevel state
-    set txtTitle [ text := level ]
+    --let level = stringLevel state
+    showColorsListWithDelay constState txtTitle 
     writeIORef ref (st+1)
     return ()
+
+sleep :: IO ()
+sleep = do
+    threadDelay $ 100000 * 10
+
+-- Функция, которая выводит в лейбл один элемент сгенерированной последовательности
+showOneColor :: GameColor -> TextCtrl ()-> IO()
+showOneColor color label = do
+    set label [ text := colorToString color ]
+    sleep
+    set label [ text := "" ]
+    return ()
+
+
+-- Функция, которая показывает пользователю сгенерированную последовательность поэлементно с задержкой
+showColorsListWithDelay :: IORef State -> TextCtrl () -> IO()
+showColorsListWithDelay generatedList label = do
+    genList <- readIORef generatedList
+    --map (\x -> showOneColor x label) genList
+    forM [1..(length genList)] $ (\a -> do
+      showOneColor a label
+      return ())
+    return()
+
 
 -- Обнуляет пользовательский список перед генерацией нового игрового уровня
 nullUrersList :: IORef State -> IORef Int -> TextCtrl () -> IORef State -> IO()

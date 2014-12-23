@@ -68,6 +68,9 @@ parseList xs = map (\x -> prs x) xs
 
 stringLevel :: State -> String
 stringLevel st = foldl(\acc x -> acc ++ " " ++ show x) "" st  
+
+colorToString :: GameColor -> String
+colorToString color = show color
 	
 	
 action n = do
