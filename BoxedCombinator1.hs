@@ -41,10 +41,11 @@ actionGUI ref txtTitle  constState = do
     return ()
 
 -- Обнуляет пользовательский список перед генерацией нового игрового уровня
-nullUrersList :: IORef State -> IO()
-nullUrersList userList = do
+nullUrersList :: IORef State -> IORef Int -> TextCtrl () -> IORef State -> IO()
+nullUrersList userList n textField st1 = do
     let tempList = []
     writeIORef userList tempList
+    actionGUI n textField st1
     return()
 
 actionUserButtons :: TextCtrl () -> IORef Int -> Window a -> IORef State -> IORef State -> GameColor -> IO()
@@ -52,11 +53,12 @@ actionUserButtons textField n w refUser st1 butColor = do
     st <- readIORef refUser
     constState <- readIORef st1
     let modifiedUserList = st ++ [butColor]
+    writeIORef refUser modifiedUserList
     let partOfGenList = getNfromList (length modifiedUserList) constState  
     let equal = compareStates modifiedUserList partOfGenList  -- Сравнивает текущий подсписок с соотв. по длине подскиском программы лексико-графически
     if (equal == False) then endOfGame w  else  -- Если подпоследовательность не равна соответствующей подпоследовательности списка программы, 
                                             --то была допущена ошибка, программа завершается
-                if (length modifiedUserList == length constState) then actionGUI n textField st1 else return()
+                if (length modifiedUserList == length constState) then nullUrersList refUser n textField st1 else return()
 
 
 
