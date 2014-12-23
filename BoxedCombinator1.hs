@@ -128,11 +128,11 @@ gui =  do
   --заглушка для таймера,показывающего, сколько осталось для закрытия задания.
   -- t <- timer f [interval := 20, on command := nextBalls vballs p]
   --Заглушка, для таймера отсчитывающего, сколько осталось времени до конца выполнения задания
-  howManyTimer <- entry f [text := "01:29" , enabled := False ]
-  b1 <- button f [ text := "yellow", bgcolor  := yellow  ]
-  b2 <- button f [ text := "green" , bgcolor  := green ]
-  b3 <- button f [ text := "blue" , bgcolor  := blue]
-  b4 <- button f [ text := "red" , bgcolor  := red ]
+  --howManyTimer <- entry f [text := "01:29" , enabled := False ]
+  b1 <- button f [ text := " ", bgcolor  := yellow, clientSize := sz 100 100  ]
+  b2 <- button f [ text := " " , bgcolor  := green, clientSize := sz 100 100 ]
+  b3 <- button f [ text := " " , bgcolor  := blue, clientSize := sz 100 100]
+  b4 <- button f [ text := " " , bgcolor  := red, clientSize := sz 100 100 ]
   q <- button f [ text := "quit" , on command := close f ]
   h <- button f [ text := "help" , on command := chelp f ]
   a <- button f [ text := "about", on command := about f ]
@@ -145,24 +145,30 @@ gui =  do
   set b4 [ on command := actionUserButtons txtTitle ref f refUserList refState Red]
  
   set f [ layout := column 0 [
-	-- fill $ widget p
+	    -- fill $ widget p
         {- верхний ряд -}
         margin 1 $ row 1 [
-	-- само задание
-        hfill $ minsize (sz 150 25) $ widget txtTitle--,
+	     -- само задание
+        hfill $ minsize (sz 150 25) $ widget txtTitle
         -- Таймер до закрытия
-	      --hfill $ minsize (sz 150 25) $ widget taskShowTimer   
+	     --hfill $ minsize (sz 150 25) $ widget taskShowTimer   
         ],
+
+		
         {- средний ряд -}
-        hfloatCentre $  margin 1 $ row 2 [
-         -- слева: кнопки
-           row 2 [
-             widget b1, 
-	     widget b2,
-	     widget b3,
-	     widget b4
-           ],
-	    minsize (sz 150 40) $ widget  howManyTimer 
+        margin 5 $ row 5 [
+        -- слева: кнопки
+          row 5 [
+            widget b1, 
+			widget b2
+           ]
+		  ], 
+	    margin 5 $ row 5 [
+		   row 5 [
+		    widget b3,
+	        widget b4
+		   ]
+	    --minsize (sz 150 40) $ widget  howManyTimer 
         ],
 	{- нижний ряд -}
         hfloatCentre $  margin 1 $ row 1 [ 
