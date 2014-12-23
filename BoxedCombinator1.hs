@@ -55,8 +55,10 @@ showOneColor_ colors label = do
     let color = head currState
     let str = colorToString color
     set label [ text := str]
+    threadDelay $ 100000 * 5
+    set label [ text := ""]
     if (currState == []) then return() else (writeIORef colors (tail currState))
- 
+
 -- Функция, которая показывает пользователю сгенерированную последовательность поэлементно с задержкой по таймеру
 showColorsListWithDelay :: Window a -> IORef State -> TextCtrl () -> IO()
 showColorsListWithDelay f generatedList label = do
@@ -64,6 +66,8 @@ showColorsListWithDelay f generatedList label = do
     stateGenList <- readIORef generatedList
     generatedListCopy <- newIORef (stateGenList)
     t <- timer f [interval := 1000, on command := showOneColor generatedListCopy label]
+    --t <- timer f [interval := 1030, on command := showOneColor generatedListCopy label]
+    set label [ text := ""]
     return ()
 
 
