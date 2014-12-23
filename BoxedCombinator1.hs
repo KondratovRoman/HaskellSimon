@@ -126,7 +126,7 @@ gui =  do
   -- Task text 
   txtTitle <- entry f [text := level , enabled := False ]
   --заглушка для таймера,показывающего, сколько осталось для закрытия задания.
-  taskShowTimer <- entry f [text := "01:29" , enabled := False ]
+  -- t <- timer f [interval := 20, on command := nextBalls vballs p]
   --Заглушка, для таймера отсчитывающего, сколько осталось времени до конца выполнения задания
   howManyTimer <- entry f [text := "01:29" , enabled := False ]
   b1 <- button f [ text := "yellow", bgcolor  := yellow  ]
