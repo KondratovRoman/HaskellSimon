@@ -32,8 +32,8 @@ main :: IO ()
 main = start $ gui
 
 --Если пользователь проиграл, то обнуляем все и запускаем игру заново
-gameOver :: Window a -> IORef State -> IORef Int -> IORef State -> TextCtrl () -> IO()
-gameOver f userList n levelList label= do
+gameOver :: Window a -> IORef State -> IORef Int -> IORef State -> TextCtrl () -> TextCtrl() -> IO()
+gameOver f userList n levelList label levelInfo = do
     endOfGame f --выводим сообщение о проигрыше
     let tempList = [] --обнуляем пользовательскую последовательность
     writeIORef userList tempList 
@@ -41,6 +41,7 @@ gameOver f userList n levelList label= do
     level <- generateLevel 1
     writeIORef levelList level
     set label [ text := stringLevel level]
+    set levelInfo [ text := "Удачи в игре! "]
     return()
 
 
@@ -86,24 +87,27 @@ showColorsListWithDelay f generatedList label = do
 
 
 -- Обнуляет пользовательский список перед генерацией нового игрового уровня и запускает новый уровень
-nullUsersList :: Window a -> IORef State -> IORef Int -> TextCtrl () -> IORef State -> IO()
-nullUsersList f userList n textField st1 = do
+nullUsersList :: Window a -> IORef State -> IORef Int -> TextCtrl () -> IORef State -> TextCtrl() -> IO()
+nullUsersList f userList n textField st1 levelInfo = do
+    nn <- readIORef n
+    set levelInfo [ text := "Вы прошли уровень " ++ show (nn-1) ++ " Ура!"]
     let tempList = []
     writeIORef userList tempList
     actionGUI f n textField st1
     return()
 
-actionUserButtons :: TextCtrl () -> IORef Int -> Window a -> IORef State -> IORef State -> GameColor -> IO()
-actionUserButtons textField n w refUser st1 butColor = do 
+actionUserButtons :: TextCtrl () -> IORef Int -> Window a -> IORef State -> IORef State -> GameColor -> TextCtrl () -> IO()
+actionUserButtons textField n w refUser st1 butColor levelInfo = do 
     st <- readIORef refUser
     constState <- readIORef st1
     let modifiedUserList = st ++ [butColor]
     writeIORef refUser modifiedUserList
     let partOfGenList = getNfromList (length modifiedUserList) constState  
     let equal = compareStates modifiedUserList partOfGenList  -- Сравнивает текущий подсписок с соотв. по длине подскиском программы лексико-графически
-    if (equal == False) then (gameOver w refUser n st1 textField)  else  -- Если подпоследовательность не равна соответствующей подпоследовательности списка программы, 
+    if (equal == False) then (gameOver w refUser n st1 textField levelInfo)  else  -- Если подпоследовательность не равна соответствующей подпоследовательности списка программы, 
                                                 --то была допущена ошибка, программа завершается
-                if (length modifiedUserList == length constState) then nullUsersList w refUser n textField st1 else return()
+                if (length modifiedUserList == length constState) then nullUsersList w refUser n textField st1 levelInfo else return()
+
 
 
 gui :: IO ()
@@ -128,7 +132,8 @@ gui =  do
   --заглушка для таймера,показывающего, сколько осталось для закрытия задания.
   -- t <- timer f [interval := 20, on command := nextBalls vballs p]
   --Заглушка, для таймера отсчитывающего, сколько осталось времени до конца выполнения задания
-  --howManyTimer <- entry f [text := "01:29" , enabled := False ]
+   --howManyTimer <- entry f [text := "01:29" , enabled := False ]
+  congr <- entry f [text := "Удачи в игре!" , enabled := False ]
   b1 <- button f [ text := " ", bgcolor  := yellow, clientSize := sz 100 100  ]
   b2 <- button f [ text := " " , bgcolor  := green, clientSize := sz 100 100 ]
   b3 <- button f [ text := " " , bgcolor  := blue, clientSize := sz 100 100]
@@ -139,21 +144,27 @@ gui =  do
 
 
  -- t <- timer f [interval := 1000, on command := showOneColor refState txtTitle]
-  set b1 [ on command := actionUserButtons txtTitle ref f refUserList refState Yellow]
-  set b2 [ on command := actionUserButtons txtTitle ref f refUserList refState Green]
-  set b3 [ on command := actionUserButtons txtTitle ref f refUserList refState Blue]
-  set b4 [ on command := actionUserButtons txtTitle ref f refUserList refState Red]
+  set b1 [ on command := actionUserButtons txtTitle ref f refUserList refState Yellow congr]
+  set b2 [ on command := actionUserButtons txtTitle ref f refUserList refState Green congr]
+  set b3 [ on command := actionUserButtons txtTitle ref f refUserList refState Blue congr]
+  set b4 [ on command := actionUserButtons txtTitle ref f refUserList refState Red congr]
  
   set f [ layout := column 0 [
 	    -- fill $ widget p
         {- верхний ряд -}
         margin 1 $ row 1 [
 	     -- само задание
-        hfill $ minsize (sz 150 25) $ widget txtTitle
+        hfill $ minsize (sz 200 25) $ widget txtTitle
+		--,minsize (sz 150 40) $ widget  howManyTimer 
         -- Таймер до закрытия
 	     --hfill $ minsize (sz 150 25) $ widget taskShowTimer   
         ],
-
+		
+		--переход уровня
+        margin 1 $ row 1 [
+	     -- само задание
+        hfill $ minsize (sz 150 25) $  widget congr
+        ],
 		
         {- средний ряд -}
         margin 5 $ row 5 [
@@ -168,7 +179,7 @@ gui =  do
 		    widget b3,
 	        widget b4
 		   ]
-	    --minsize (sz 150 40) $ widget  howManyTimer 
+	    --,minsize (sz 150 40) $ widget  howManyTimer 
         ],
 	{- нижний ряд -}
         hfloatCentre $  margin 1 $ row 1 [ 
@@ -181,7 +192,3 @@ gui =  do
    ] 
 
   return() 
-  
-
-
-
