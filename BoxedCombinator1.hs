@@ -108,7 +108,23 @@ actionUserButtons textField n w refUser st1 butColor levelInfo = do
                                                 --то была допущена ошибка, программа завершается
                 if (length modifiedUserList == length constState) then nullUsersList w refUser n textField st1 levelInfo else return()
 
+--Делает кнопки недоступными для пользователя
+disableButs :: [Button ()] -> IO ()
+disableButs buttons = do 
+	set (getIfromList buttons 0) [enabled := False]
+	set (getIfromList buttons 1) [enabled := False]
+	set (getIfromList buttons 2) [enabled := False]
+	set (getIfromList buttons 3) [enabled := False]
+	return()
 
+--Делает кнопки доступными для пользователя
+enableButs :: [Button ()] -> IO ()
+enableButs buttons = do 
+	set (getIfromList buttons 0) [enabled := True]
+	set (getIfromList buttons 1) [enabled := True]
+	set (getIfromList buttons 2) [enabled := True]
+	set (getIfromList buttons 3) [enabled := True]
+	return()
 
 gui :: IO ()
 gui =  do

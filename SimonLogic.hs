@@ -37,6 +37,11 @@ getColorOnNumber n
 getNfromList :: Int -> State -> State
 getNfromList n list = take n list
 
+{-Функция, которая достает из списка элемент по требуемому индексу-}
+getIfromList :: [a] -> Int -> a
+getIfromList list 0 = head list
+getIfromList list n = getIfromList (tail list) (n-1)
+
 
 {-Функция, проверяющая правильность нажатых пользователем цветов.
 Получает на вход пользовательское состояние и правильное состояние-}
